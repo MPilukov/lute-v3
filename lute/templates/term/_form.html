@@ -263,6 +263,20 @@
     // because this form is opened in a frame.
     window.parent.postMessage({ event: "LuteTermFormOpened" }, "*");
 
+    // Prefill an empty translation with a suggestion.
+    const suggestion_lang_id = {{ term.language_id or 0 }};
+    const suggestion_text = $("#text").val().replace(/\u200b/g, "").trim();
+    if (suggestion_lang_id != 0 && suggestion_text != "" && $("#translation").val().trim() == "") {
+      fetch(`/term/suggest_translation/${suggestion_lang_id}/${encodeURIComponent(suggestion_text)}`)
+        .then(response => response.json())
+        .then(data => {
+          // The user may have started typing meanwhile.
+          if (data.translation && $("#translation").val().trim() == "")
+            $("#translation").val(data.translation);
+        })
+        .catch(() => {});
+    }
+
     enable_disable_sync_status_checkbox();
   });  // end $(document).ready
 

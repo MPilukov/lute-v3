@@ -32,6 +32,7 @@ from lute.term.service import (
 )
 from lute.db import db
 from lute.term.forms import TermForm
+from lute.term.suggest_translation import suggest_translation
 import lute.utils.formutils
 
 bp = Blueprint("term", __name__, url_prefix="/term")
@@ -342,6 +343,15 @@ def search_by_text_in_language(text, langid):
 
     result = [_make_entry(t) for t in matches]
     return jsonify(result)
+
+
+@bp.route("/suggest_translation/<int:langid>/<text>", methods=["GET"])
+def suggest_translation_for_term(langid, text):
+    "Suggested translation for the term form, empty if there is none."
+    lang = db.session.get(Language, langid)
+    if lang is None:
+        return jsonify({"translation": ""})
+    return jsonify({"translation": suggest_translation(lang.name, text)})
 
 
 @bp.route("/sentences/<int:langid>/<text>", methods=["GET"])
